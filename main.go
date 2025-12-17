@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"net/http"
 	"liveAt/utils"
+	"liveAt/middleware"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -12,6 +13,8 @@ func main(){
 	fmt.Println("starting the server at port: 3000 ")
     
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.LogRequestTime)
 
 	r.Get("/ping",pingHandler)
 
