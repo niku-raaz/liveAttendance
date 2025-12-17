@@ -4,23 +4,29 @@ import(
 	"fmt"
 	"net/http"
 	"liveAt/utils"
+	"github.com/go-chi/chi/v5"
 )
 
 func main(){
 
 	fmt.Println("starting the server at port: 3000 ")
     
-	mux:= http.NewServeMux()
+	r := chi.NewRouter()
 
-	mux.HandleFunc("/ping",pingHandler)
-	mux.HandleFunc("/health",healthHandler)
+	r.Get("/ping",pingHandler)
 
-	mux.HandleFunc("/",func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/health",healthHandler)
+
+	r.Get("/version",func(w http.ResponseWriter, r *http.Request) {
+		utils.Success(w,http.StatusOK,"v1.0.0")
+	})
+
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		utils.Error(w,http.StatusNotFound,"Route not found")
 	})
 
 	// always remember this blocks the main go-routine forever
-	err:= http.ListenAndServe(":3000",mux)
+	err:= http.ListenAndServe(":3000",r)
 	if err!=nil{
 		fmt.Println("Error starting server ",err)
 	}
@@ -29,19 +35,11 @@ func main(){
 
 func pingHandler(w http.ResponseWriter, r *http.Request){
 
-	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	utils.Success(w,http.StatusOK,"PONG")
 }
+
 func healthHandler(w http.ResponseWriter, r *http.Request){
 
-	if r.Method != http.MethodGet {
-		utils.Error(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
 	response:= map[string]any{
 		"status": "ok",
 	}
